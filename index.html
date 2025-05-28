@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Countdown Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to ensure Inter font and smooth transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px; /* Add some padding for smaller screens */
+            box-sizing: border-box;
+        }
+        .timer-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+            padding: 2.5rem; /* More padding */
+            max-width: 500px; /* Max width for better readability */
+            width: 100%;
+            text-align: center;
+        }
+        .time-box {
+            /* Background color set by JS */
+            border-radius: 0.75rem; /* Rounded corners for individual boxes */
+            padding: 1rem 0.5rem;
+            margin: 0.5rem;
+            flex: 1; /* Allow boxes to grow and shrink */
+            min-width: 80px; /* Minimum width for boxes */
+            transition: transform 0.2s ease-in-out, background-color 0.3s ease; /* Smooth hover and color transition */
+        }
+        .time-box:hover {
+            transform: translateY(-5px); /* Lift effect on hover */
+        }
+        .time-value {
+            font-size: 2.5rem; /* Larger font for values */
+            font-weight: 700; /* Bold font */
+            /* Color set by JS */
+            transition: color 0.3s ease; /* Smooth color transition */
+        }
+        .time-label {
+            font-size: 0.9rem;
+            /* Color set by JS */
+            margin-top: 0.25rem;
+            transition: color 0.3s ease; /* Smooth color transition */
+        }
+        .message {
+            margin-top: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e53e3e; /* Red for countdown finished message */
+        }
+        /* Styles for the title, controlled by JS */
+        #timerTitleDisplay {
+            font-weight: bold; /* Ensure it remains bold */
+            margin-bottom: 1.5rem; /* Space below the title */
+            transition: font-size 0.3s ease, color 0.3s ease; /* Smooth transitions for size and color */
+        }
+    </style>
+</head>
+<body>
+    <div class="timer-container">
+        <h1 id="timerTitleDisplay"></h1>
+
+        <div class="flex justify-center items-center flex-wrap mb-6">
+            <div class="time-box">
+                <div id="days" class="time-value">00</div>
+                <div class="time-label">Days</div>
+            </div>
+            <div class="time-box">
+                <div id="hours" class="time-value">00</div>
+                <div class="time-label">Hours</div>
+            </div>
+            <div class="time-box">
+                <div id="minutes" class="time-value">00</div>
+                <div class="time-label">Minutes</div>
+            </div>
+            <div class="time-box">
+                <div id="seconds" class="time-value">00</div>
+                <div class="time-label">Seconds</div>
+            </div>
+        </div>
+
+        <div id="countdownMessage" class="message hidden"></div>
+    </div>
+
+    <script>
+        // --- Configuration Variables (Edit these to change colors and default countdown) ---
+        // Default title for the countdown timer
+        const DEFAULT_TIMER_TITLE = 'Time to Flip the season Down Under';
+        // Default font size for the timer title (e.g., '3rem' for 3 times the base font size)
+        const DEFAULT_TITLE_FONT_SIZE = '2.5rem'; // Equivalent to text-4xl in Tailwind
+        // Default color for the timer title
+        const DEFAULT_TITLE_COLOR = '#2d3748'; // Dark gray
+
+        // Default color for the background of the time boxes
+        const DEFAULT_BOX_COLOR = '#681235'; // A shade of blue
+        // Default color for the large numbers (Days, Hours, Minutes, Seconds)
+        const DEFAULT_VALUE_COLOR = '#ffffff'; // White for contrast
+        // Default color for the labels (e.g., "Days", "Hours")
+        const DEFAULT_LABEL_COLOR = '#ffffff'; // Light gray for labels
+
+        // --- Get references to HTML elements ---
+        const timerTitleDisplay = document.getElementById('timerTitleDisplay');
+        const daysElement = document.getElementById('days');
+        const hoursElement = document.getElementById('hours');
+        const minutesElement = document.getElementById('minutes');
+        const secondsElement = document.getElementById('seconds');
+        const countdownMessage = document.getElementById('countdownMessage');
+        const timeBoxes = document.querySelectorAll('.time-box');
+        const timeValues = document.querySelectorAll('.time-value');
+        const timeLabels = document.querySelectorAll('.time-label');
+
+        let countdownInterval; // Variable to hold the interval ID
+        let targetDate; // Variable to store the target date object
+
+        // --- Countdown Logic ---
+
+        // Function to update the countdown display
+        function updateCountdown() {
+            const now = new Date().getTime(); // Current time in milliseconds
+            const distance = targetDate - now; // Time remaining in milliseconds
+
+            // If the countdown is finished
+            if (distance < 0) {
+                clearInterval(countdownInterval); // Stop the interval
+                daysElement.textContent = '00';
+                hoursElement.textContent = '00';
+                minutesElement.textContent = '00';
+                secondsElement.textContent = '00';
+                countdownMessage.textContent = "🥳 Countdown Finished! 🥳";
+                countdownMessage.classList.remove('hidden'); // Show the message
+                return;
+            }
+
+            // Calculate time units
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Display the results, padding with leading zeros if necessary
+            daysElement.textContent = String(days).padStart(2, '0');
+            hoursElement.textContent = String(hours).padStart(2, '0');
+            minutesElement.textContent = String(minutes).padStart(2, '0');
+            secondsElement.textContent = String(seconds).padStart(2, '0');
+
+            countdownMessage.classList.add('hidden'); // Hide the message if counting down
+        }
+
+        // Function to load countdown target from local storage or set a default
+        function loadCountdown() {
+            const storedTarget = localStorage.getItem('countdownTarget');
+
+            if (storedTarget) {
+                targetDate = new Date(storedTarget);
+            } else {
+                // Default target: June 25, 2025 at 00:00:00
+                const defaultTarget = new Date('2025-06-25T00:00:00');
+                // You can change this default date/time by modifying the line above:
+                // Example: const defaultTarget = new Date('2025-12-25T00:00:00'); // Christmas 2025
+                targetDate = defaultTarget;
+                localStorage.setItem('countdownTarget', targetDate.toISOString()); // Store the default
+            }
+
+            // Start the countdown if the target is in the future
+            if (targetDate.getTime() > new Date().getTime()) {
+                countdownInterval = setInterval(updateCountdown, 1000);
+                updateCountdown(); // Call immediately to avoid 1-second delay
+            } else {
+                // If stored target is in the past, display finished message
+                daysElement.textContent = '00';
+                hoursElement.textContent = '00';
+                minutesElement.textContent = '00';
+                secondsElement.textContent = '00';
+                countdownMessage.textContent = "🥳 Countdown Finished! 🥳";
+                countdownMessage.classList.remove('hidden');
+            }
+        }
+
+        // --- Settings Loading and Applying ---
+
+        // Function to apply the configured colors to the timer elements
+        function applyConfiguredColors() {
+            // Set background color for time boxes
+            timeBoxes.forEach(box => {
+                box.style.backgroundColor = DEFAULT_BOX_COLOR;
+            });
+
+            // Set text color for time values
+            timeValues.forEach(value => {
+                value.style.color = DEFAULT_VALUE_COLOR;
+            });
+
+            // Set text color for time labels
+            timeLabels.forEach(label => {
+                label.style.color = DEFAULT_LABEL_COLOR;
+            });
+        }
+
+        // Function to load and apply the timer title and its styles
+        function loadTitle() {
+            const storedTitle = localStorage.getItem('timerTitle');
+            if (storedTitle) {
+                timerTitleDisplay.textContent = storedTitle;
+            } else {
+                // Set default title if none is stored
+                timerTitleDisplay.textContent = DEFAULT_TIMER_TITLE;
+            }
+            // Apply font size and color from configuration variables
+            timerTitleDisplay.style.fontSize = DEFAULT_TITLE_FONT_SIZE;
+            timerTitleDisplay.style.color = DEFAULT_TITLE_COLOR;
+
+            // Always save the current title (either stored or default) to ensure persistence
+            localStorage.setItem('timerTitle', timerTitleDisplay.textContent);
+        }
+
+        // Custom message box function (retained for user feedback, though less needed now)
+        function showMessageBox(message) {
+            const messageBox = document.createElement('div');
+            messageBox.className = 'fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50';
+            messageBox.innerHTML = `
+                <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full text-center">
+                    <p class="text-lg font-semibold mb-6 text-gray-800">${message}</p>
+                    <button id="closeMessageBox" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                        OK
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(messageBox);
+
+            document.getElementById('closeMessageBox').addEventListener('click', () => {
+                document.body.removeChild(messageBox);
+            });
+        }
+
+        // Initial load functions on window load
+        window.onload = function() {
+            loadCountdown();          // Load and start the countdown
+            applyConfiguredColors();  // Apply the colors from the JS constants
+            loadTitle();              // Load and apply the saved title and its styles
+        };
+    </script>
+</body>
+</html>
