@@ -96,9 +96,9 @@
         // Default title for the countdown timer
         const DEFAULT_TIMER_TITLE = 'Time to Flip the season Down Under';
         // Default font size for the timer title (e.g., '3rem' for 3 times the base font size)
-        const DEFAULT_TITLE_FONT_SIZE = '2.5rem'; // Equivalent to text-4xl in Tailwind
+        const DEFAULT_TITLE_FONT_SIZE = '1.5rem'; // Equivalent to text-4xl in Tailwind
         // Default color for the timer title
-        const DEFAULT_TITLE_COLOR = '#2d3748'; // Dark gray
+        const DEFAULT_TITLE_COLOR = '#681235'; // Dark gray
 
         // Default color for the background of the time boxes
         const DEFAULT_BOX_COLOR = '#681235'; // A shade of blue
@@ -163,7 +163,7 @@
                 targetDate = new Date(storedTarget);
             } else {
                 // Default target: June 25, 2025 at 00:00:00
-                const defaultTarget = new Date('2025-06-25T00:00:00');
+                const defaultTarget = new Date('2025-06-01T00:00:00');
                 // You can change this default date/time by modifying the line above:
                 // Example: const defaultTarget = new Date('2025-12-25T00:00:00'); // Christmas 2025
                 targetDate = defaultTarget;
